@@ -20,7 +20,7 @@
 
 [NestJS](https://nestjs.com/) | [Mutex](https://www.npmjs.com/package/async-mutex)
 
-Скачате проект 
+Скачайте проект 
 ```bash
 git clone https://github.com/icehuntmen/test-maplink.git
 ```
@@ -30,7 +30,7 @@ git clone https://github.com/icehuntmen/test-maplink.git
 npm install
 ```
 
-Создайте `.env` фаил в корне проекта
+Создайте `.env` файл в корне проекта
 ```shell
 APP_PORT=4000
 ```
