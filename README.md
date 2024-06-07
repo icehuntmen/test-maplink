@@ -20,7 +20,7 @@
 
 [NestJS](https://nestjs.com/) | [Mutex](https://www.npmjs.com/package/async-mutex)
 
-Скачайте проект 
+Разверните проект 
 ```bash
 git clone https://github.com/icehuntmen/test-maplink.git
 ```
@@ -41,7 +41,7 @@ npm run start:dev
 ```
 
 ### Swagger
-Документация по эндпоинтам модно увидеть, 
+Документация по эндпоинтам можно увидеть, 
 после запуска проекта по ссылке указанной ниже
 
 [http://localhost:4000/swagger]([http://localhost:4000/swagger)
