@@ -1,20 +1,37 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { HelperService } from '@apps/helper/helper.service';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 import { ConfigService } from '@nestjs/config';
-import { AppMessageDTO } from '@apps/dto/app.dto';
+import { AppCreateDataDto, AppLinkDto, AppMessageDTO } from '@apps/dto/app.dto';
+import { AppStoreService } from '@apps/app-store.service';
 
 @Injectable()
 export class AppService {
-  private uri: string = 'https://localhost';
+  constructor(
+    private config: ConfigService,
+    private localStore: AppStoreService,
+  ) {}
 
-  constructor(private config: ConfigService) {}
-
-  getUrl() {
-    return `${this.uri}:${this.config.get('app.port')}`;
+  /**
+   * @memberof AppService
+   * СОЗДАНИЕ ССЫЛКИ
+   * @param {String} id - Уникальный идентификатор ссылки на основе UUID v4
+   */
+  composeUrl(id: string): string {
+    return `${this.config.get('app.uri')}:${this.config.get('app.port')}/api/v1/${id}`;
   }
-  async generateUniqueLink(dataInsert: string): Promise<string> {
-    const storedData = (await HelperService.getData()) || {};
+
+  /**
+   * @memberof AppService
+   * ГЕНЕРАЦИЯ УНИАЛЬНОЙ ССЫЛКИ
+   * @param {String} dataInsert
+   */
+  async generateUniqueLink(dataInsert: AppCreateDataDto): Promise<AppLinkDto> {
+    const storedData = (await this.localStore.getData()) || {};
     const existingLink = Object.keys(storedData).find(
       (key) =>
         storedData[key].dataInsert === dataInsert && storedData[key].active,
@@ -26,21 +43,25 @@ export class AppService {
 
     let link = uuidv4();
 
-    const uri = `${this.getUrl()}/api/v1?link=${link}`;
-    storedData[link] = { dataInsert, link: uri, active: true };
-    HelperService.setData(storedData);
-    return uri;
+    const url = this.composeUrl(link);
+    storedData[link] = { dataInsert, link: url, active: true };
+    await this.localStore.setData(storedData);
+    return { url };
   }
 
-  async getMessageByLink(link: string): Promise<AppMessageDTO | HttpException> {
-    const storedData = await HelperService.getData();
-    if (storedData && storedData[link] && storedData[link].active) {
-      storedData[link].active = false;
-      await HelperService.setData(storedData);
-      const dataInsert = storedData[link].dataInsert;
-      delete storedData[link]; // Удаляем данные по ссылке
-      await HelperService.setData(storedData);
-      return { message: dataInsert };
+  /**
+   * @memberof AppService
+   * ПОЛУЧЕНИЕ УНИАКАЛЬНОЙ ССЫЛКИ
+   * @param {String} linkId
+   */
+  async getMessageByLink(
+    linkId: string,
+  ): Promise<AppMessageDTO | NotFoundException> {
+    const storedData = await this.localStore.getData();
+    if (storedData && storedData[linkId] && storedData[linkId].active) {
+      storedData[linkId].active = false;
+      await this.localStore.deleteData(linkId);
+      return storedData[linkId].dataInsert;
     } else {
       throw new HttpException(
         'Ссылка не найдена или уже использована',

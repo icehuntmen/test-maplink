@@ -17,8 +17,11 @@ export default async function swaggerInit(app: INestApplication) {
     .setTitle(`Map Links API`)
     .setDescription(description)
     .setVersion(`v${configService.get('app.version')}`)
-    .setContact('Alexander Hunter', null, 'icehuntmen@gmail.com')
-    .addBearerAuth()
+    .setContact(
+      'Alexander Hunter',
+      'https://github.com/icehuntmen',
+      'icehuntmen@gmail.com',
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, documentBuild, {
